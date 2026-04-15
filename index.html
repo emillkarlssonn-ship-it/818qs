@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pluggguider</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --border: #2a2a3a;
+    --text: #e8e8f0;
+    --muted: #7a7a95;
+    --faint: #4a4a65;
+    --kemi: #60a5fa;
+    --kemi-light: rgba(96,165,250,0.08);
+    --kemi-border: rgba(96,165,250,0.2);
+    --samhall: #34d399;
+    --samhall-light: rgba(52,211,153,0.08);
+    --samhall-border: rgba(52,211,153,0.2);
+    --tag-bg: #1a1a24;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grain overlay */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  .wrap {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  header {
+    padding: 72px 0 56px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 56px;
+  }
+
+  .header-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--faint);
+    margin-bottom: 20px;
+    display: block;
+  }
+
+  h1 {
+    font-family: 'Instrument Serif', serif;
+    font-size: clamp(3rem, 8vw, 5.5rem);
+    line-height: 0.95;
+    color: var(--text);
+    margin-bottom: 20px;
+    letter-spacing: -0.02em;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--muted);
+  }
+
+  .header-desc {
+    color: var(--muted);
+    font-size: 16px;
+    font-weight: 300;
+    max-width: 420px;
+    line-height: 1.6;
+  }
+
+  /* Filter tabs */
+  .filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+  }
+
+  .filter-btn {
+    padding: 7px 16px;
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    background: var(--surface);
+    color: var(--muted);
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .filter-btn:hover { border-color: var(--text); color: var(--text); }
+  .filter-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+
+  /* Section header */
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--faint);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Guide cards */
+  .cards {
+    display: grid;
+    gap: 16px;
+    margin-bottom: 56px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 32px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px;
+    height: 100%;
+    background: var(--card-color, var(--text));
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+    border-color: transparent;
+  }
+
+  .card:hover::before { opacity: 1; }
+
+  .card-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+    background: var(--icon-bg, var(--tag-bg));
+  }
+
+  .card-content { flex: 1; min-width: 0; }
+
+  .card-subject {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--card-color, var(--muted));
+    margin-bottom: 6px;
+  }
+
+  .card-title {
+    font-size: 17px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .card-desc {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 300;
+    line-height: 1.4;
+  }
+
+  .card-tags {
+    display: flex;
+    gap: 6px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: var(--tag-bg);
+    color: var(--muted);
+    letter-spacing: 0.5px;
+  }
+
+  .card-arrow {
+    color: var(--faint);
+    font-size: 20px;
+    flex-shrink: 0;
+    transition: transform 0.2s, color 0.2s;
+  }
+
+  .card:hover .card-arrow {
+    transform: translateX(4px);
+    color: var(--text);
+  }
+
+  /* Kemi color */
+  .kemi { --card-color: var(--kemi); --icon-bg: var(--kemi-light); }
+  .samhall { --card-color: var(--samhall); --icon-bg: var(--samhall-light); }
+
+  /* Hidden state */
+  .card.hidden { display: none; }
+  .section-group.hidden { display: none; }
+
+  /* Footer */
+  footer {
+    border-top: 1px solid var(--border);
+    padding-top: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: gap;
+  }
+
+  .footer-text {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--faint);
+    letter-spacing: 1px;
+  }
+
+  .guide-count {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--faint);
+  }
+
+  @media (max-width: 560px) {
+    .card { padding: 20px; gap: 16px; }
+    .card-icon { width: 44px; height: 44px; font-size: 18px; }
+    .card-title { font-size: 15px; }
+    h1 { font-size: 3rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <span class="header-label">Gymnasium — De La Gardie</span>
+    <h1>Plugg<em>guider</em></h1>
+    <p class="header-desc">Samlade studieguider för prov och läxförhör. Välj ett ämne eller bläddra bland alla.</p>
+  </header>
+
+  <div class="filters">
+    <button class="filter-btn active" onclick="filter('alla', this)">Alla</button>
+    <button class="filter-btn" onclick="filter('kemi', this)">Kemi</button>
+    <button class="filter-btn" onclick="filter('samhall', this)">Samhällskunskap</button>
+  </div>
+
+  <!-- Kemi -->
+  <div class="section-group" id="group-kemi" data-subject="kemi">
+    <div class="section-label">Kemi</div>
+    <div class="cards">
+
+      <a href="kemi1_plugguide.html" class="card kemi">
+        <div class="card-icon">⚗️</div>
+        <div class="card-content">
+          <div class="card-subject">Kemi 1</div>
+          <div class="card-title">Redox & Syra-Bas — Läxförhör v.17</div>
+          <div class="card-desc">Redoxreaktioner, oxidationstal, spänningsserien, protolysreaktioner, pH och neutralisation.</div>
+          <div class="card-tags">
+            <span class="tag">Teori</span>
+            <span class="tag">Flashkort</span>
+            <span class="tag">Quiz</span>
+          </div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+
+      <a href="kemi_quiz.html" class="card kemi">
+        <div class="card-icon">🧪</div>
+        <div class="card-content">
+          <div class="card-subject">Kemi 1</div>
+          <div class="card-title">Syror & Baser — Quiz</div>
+          <div class="card-desc">Interaktiv quiz om syror, baser och relaterade begrepp.</div>
+          <div class="card-tags">
+            <span class="tag">Quiz</span>
+          </div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- Samhällskunskap -->
+  <div class="section-group" id="group-samhall" data-subject="samhall">
+    <div class="section-label">Samhällskunskap</div>
+    <div class="cards">
+
+      <a href="ekonomi_studieguide.html" class="card samhall">
+        <div class="card-icon">📊</div>
+        <div class="card-content">
+          <div class="card-subject">Samhällskunskap</div>
+          <div class="card-title">Ekonomiska begrepp</div>
+          <div class="card-desc">85 begrepp — BNP, inflation, konjunktur, finanspolitik, penningpolitik och mer.</div>
+          <div class="card-tags">
+            <span class="tag">Bläddra</span>
+            <span class="tag">Flashkort</span>
+          </div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+
+    </div>
+  </div>
+
+  <footer>
+    <span class="guide-count" id="count">3 guider</span>
+  </footer>
+
+</div>
+
+<script>
+function filter(subject, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  const groups = document.querySelectorAll('.section-group');
+  groups.forEach(g => {
+    if (subject === 'alla' || g.dataset.subject === subject) {
+      g.classList.remove('hidden');
+    } else {
+      g.classList.add('hidden');
+    }
+  });
+
+  // Update count
+  const visible = document.querySelectorAll('.section-group:not(.hidden) .card').length;
+  document.getElementById('count').textContent = visible + ' guide' + (visible !== 1 ? 'r' : '');
+}
+</script>
+</body>
+</html>
