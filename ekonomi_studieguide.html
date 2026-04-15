@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ekonomi – Studieguide</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #13161e;
+    --card: #191d28;
+    --border: #252a38;
+    --accent: #e8c547;
+    --accent2: #5b8af5;
+    --accent3: #e05f5f;
+    --text: #dde2f0;
+    --muted: #6b7494;
+    --tag-bg: #1e2333;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Header */
+  header {
+    padding: 2.5rem 2rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 100;
+    backdrop-filter: blur(10px);
+  }
+
+  .header-top {
+    display: flex;
+    align-items: baseline;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2rem;
+    color: var(--accent);
+    letter-spacing: -0.02em;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Controls */
+  .controls {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  input[type="search"] {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.875rem;
+    width: 220px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input[type="search"]:focus { border-color: var(--accent); }
+
+  .mode-btns {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 0.45rem 1rem;
+    border-radius: 6px;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--text); }
+  .btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
+
+  .stats {
+    margin-left: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  /* Category tabs */
+  .cat-tabs {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    padding: 1rem 2rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .cat-tab {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: 'Syne', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 0.4rem 0.9rem;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    letter-spacing: 0.03em;
+  }
+  .cat-tab:hover { color: var(--text); }
+  .cat-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* Main layout */
+  main {
+    padding: 1.5rem 2rem 4rem;
+  }
+
+  /* Browse mode */
+  .category-section { margin-bottom: 2.5rem; }
+
+  .cat-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .cat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .cat-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .concept-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 0.75rem;
+  }
+
+  .concept-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    transition: border-color 0.15s, transform 0.15s;
+    cursor: default;
+  }
+  .concept-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-1px);
+  }
+
+  .concept-term {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--accent);
+    margin-bottom: 0.35rem;
+  }
+
+  .concept-def {
+    font-size: 0.82rem;
+    color: #a0a8c0;
+    line-height: 1.55;
+  }
+
+  .concept-sub {
+    margin-top: 0.5rem;
+    padding-left: 0.75rem;
+    border-left: 2px solid var(--border);
+  }
+
+  .concept-sub-item {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-top: 0.2rem;
+  }
+
+  .concept-sub-item span {
+    color: #8899cc;
+    font-weight: 600;
+  }
+
+  /* Flashcard mode */
+  #flashcard-mode {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    padding-top: 1rem;
+  }
+
+  .fc-progress {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  .fc-progress-bar {
+    width: 340px;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .fc-progress-fill {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.3s;
+  }
+
+  .flashcard-wrap {
+    perspective: 1000px;
+    width: min(480px, 92vw);
+    height: 260px;
+    cursor: pointer;
+  }
+
+  .flashcard {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.45s cubic-bezier(.4,0,.2,1);
+  }
+
+  .flashcard.flipped { transform: rotateY(180deg); }
+
+  .fc-face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    text-align: center;
+    border: 1px solid var(--border);
+  }
+
+  .fc-front {
+    background: var(--card);
+  }
+
+  .fc-back {
+    background: #16192a;
+    border-color: var(--accent2);
+    transform: rotateY(180deg);
+  }
+
+  .fc-term {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.7rem;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+  }
+
+  .fc-hint {
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .fc-def {
+    font-size: 0.9rem;
+    color: var(--text);
+    line-height: 1.6;
+    max-width: 400px;
+  }
+
+  .fc-cat-badge {
+    font-size: 0.68rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+  }
+
+  .fc-nav {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .fc-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.6rem 1.5rem;
+    border-radius: 8px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .fc-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .fc-shuffle {
+    background: none;
+    border: 1px dashed var(--border);
+    color: var(--muted);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .fc-shuffle:hover { border-color: var(--accent2); color: var(--accent2); }
+
+  .fc-filter-note {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--accent2);
+  }
+
+  /* No results */
+  .no-results {
+    text-align: center;
+    padding: 3rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <h1>Ekonomi</h1>
+    <span class="subtitle">// centrala begrepp · provförberedelse</span>
+    <span class="stats" id="stats-label"></span>
+  </div>
+  <div class="controls">
+    <input type="search" id="search-input" placeholder="Sök begrepp..." oninput="filterAll()">
+    <div class="mode-btns">
+      <button class="btn active" id="btn-browse" onclick="setMode('browse')">Bläddra</button>
+      <button class="btn" id="btn-flash" onclick="setMode('flash')">Flashkort</button>
+    </div>
+  </div>
+</header>
+
+<div class="cat-tabs" id="cat-tabs">
+  <button class="cat-tab active" onclick="filterCat('all', this)">Alla</button>
+</div>
+
+<main>
+  <div id="browse-mode"></div>
+  <div id="flashcard-mode">
+    <div class="fc-progress">
+      <span id="fc-counter">1 / 1</span>
+    </div>
+    <div class="fc-progress-bar">
+      <div class="fc-progress-fill" id="fc-bar"></div>
+    </div>
+    <span class="fc-filter-note" id="fc-filter-note"></span>
+    <div class="flashcard-wrap" onclick="flipCard()">
+      <div class="flashcard" id="flashcard">
+        <div class="fc-face fc-front">
+          <div class="fc-cat-badge" id="fc-cat-badge"></div>
+          <div class="fc-term" id="fc-term"></div>
+          <div class="fc-hint">klicka för definition</div>
+        </div>
+        <div class="fc-face fc-back">
+          <div class="fc-cat-badge" id="fc-cat-badge-back"></div>
+          <div class="fc-def" id="fc-def"></div>
+        </div>
+      </div>
+    </div>
+    <div class="fc-nav">
+      <button class="fc-btn" onclick="fcNav(-1)">← Föregående</button>
+      <button class="fc-btn" onclick="fcNav(1)">Nästa →</button>
+    </div>
+    <button class="fc-shuffle" onclick="shuffleCards()">⇄ Blanda kort</button>
+  </div>
+</main>
+
+<script>
+const DATA = [
+  {
+    cat: "Lön & Skatter",
+    concepts: [
+      { term: "Bruttolön", def: "Din totala lön innan skatter och avgifter dragits av. Det är det belopp du 'tjänar' på pappret." },
+      { term: "Nettolön", def: "Den lön du faktiskt får ut efter att skatter (framförallt kommunalskatt och statlig inkomstskatt) dragits av. Kallas också 'take-home pay'." },
+      { term: "Disponibel inkomst", def: "Det belopp ett hushåll har kvar att använda fritt efter skatter och transfereringar (bidrag, bostadsbidrag m.m.) räknats in. Nettolön + bidrag = disponibel inkomst." },
+      { term: "Direkt skatt", def: "Skatt som betalas direkt av den person eller det företag som bär skatten. Exempel: inkomstskatt, kommunalskatt. Du betalar direkt till staten/kommunen." },
+      { term: "Indirekt skatt", def: "Skatt som betalas indirekt via priset på en vara eller tjänst. Exempel: moms (25%), punktskatter på alkohol och tobak. Företaget betalar in skatten men du som konsument bär kostnaden." },
+      {
+        term: "Kommunalskatt",
+        def: "Den direkta skatt du betalar på din inkomst till tre olika nivåer. Den totala kommunalskatten är vanligen ca 30–32% av inkomsten.",
+        sub: [
+          { label: "Kommunen", val: "ca 20% – finansierar skola, äldreomsorg, bibliotek m.m." },
+          { label: "Region (fd Landsting)", val: "ca 10% – finansierar sjukvård, kollektivtrafik." },
+          { label: "Svenska kyrkan", val: "ca 1% – frivillig för icke-medlemmar." },
+          { label: "Begravningsavgift", val: "ca 0,2–0,4% – ingår i kyrkans del, gäller alla." },
+        ]
+      },
+    ]
+  },
+  {
+    cat: "Lån & Kredit",
+    concepts: [
+      { term: "Ränta", def: "Priset för att låna pengar, uttryckt i procent. Om du lånar 100 000 kr med 5% ränta betalar du 5 000 kr per år utöver lånet. Räntan är bankens förtjänst och låntagarens kostnad." },
+      { term: "Amortering", def: "Återbetalning av själva skulden (kapitalet), till skillnad från räntan. Om du amorterar 1 000 kr/mån minskar din skuld med 1 000 kr den månaden." },
+    ]
+  },
+  {
+    cat: "Produktion & Ekonomiska System",
+    concepts: [
+      {
+        term: "Produktionsfaktorer",
+        def: "De tre grundläggande resurser som behövs för att producera varor och tjänster:",
+        sub: [
+          { label: "Råvaror", val: "Naturresurser som omvandlas – skog, olja, malm." },
+          { label: "Realkapital", val: "Maskiner, byggnader, verktyg som används i produktionen." },
+          { label: "Arbetskraft", val: "Människors arbete och kompetens." },
+        ]
+      },
+      { term: "Infrastruktur", def: "De grundläggande fysiska och organisatoriska strukturer ett samhälle behöver för att fungera: vägar, järnvägar, elnät, vattenledningar, bredband. Ofta finansierat av staten." },
+      { term: "Monopol", def: "En marknad med endast EN säljare av en vara/tjänst utan nära substitut. Monopolisten kan sätta priset fritt. Exempel: tidigare Systembolaget för starksprit i Sverige." },
+      { term: "Oligopol", def: "En marknad dominerad av FÅ stora aktörer som gemensamt har stor marknadsmakt. Aktörerna påverkar varandra kraftigt. Exempel: mobiloperatörer (Telia, Tele2, Telenor)." },
+      { term: "Socialism", def: "Ekonomisk ideologi där produktionsmedlen ägs kollektivt (av staten eller samhället) och resurser fördelas jämnare. Fokus på jämlikhet och gemensamt välmående." },
+      { term: "Planekonomi", def: "Ekonomiskt system där staten styr vad, hur och till vem varor och tjänster produceras. Marknaden ersätts av centrala beslut. Exempel: Sovjet-Ryssland." },
+      { term: "Kapitalism", def: "Ekonomisk ideologi byggd på privat ägande av produktionsmedlen, fri marknad och vinstvärde som drivkraft. Individen och företagen fattar ekonomiska beslut." },
+      { term: "Marknadsekonomi", def: "Ekonomiskt system där priser och produktion bestäms av utbud och efterfrågan på fria marknader utan statlig inblandning. Den 'osynliga handen' (Adam Smith) styr resurserna." },
+      { term: "Blandekonomi", def: "Kombination av marknadsekonomi och offentlig inblandning. Staten reglerar och tillhandahåller vissa tjänster (sjukvård, utbildning) medan marknaden hanterar övriga. Sveriges modell." },
+    ]
+  },
+  {
+    cat: "Det ekonomiska kretsloppet",
+    concepts: [
+      { term: "Det ekonomiska kretsloppet", def: "En modell som visar hur pengar, varor och tjänster flödar mellan aktörerna i ekonomin: hushåll, företag, offentlig sektor, banker och utlandet." },
+      { term: "Det inre kretsloppet (lilla)", def: "Det enklaste kretsloppet – flödet av pengar och resurser ENBART mellan hushåll och företag. Hushåll säljer sin arbetskraft → får lön → köper varor av företagen → pengarna cirkulerar." },
+      { term: "Det yttre kretsloppet", def: "Det utvidgade kretsloppet som inkluderar offentlig sektor, banker/kreditinstitut och utlandet. Skatter, bidrag, lån, räntor, import och export ingår." },
+      { term: "Hushåll", def: "Privatpersoner och familjer. I kretsloppet erbjuder de arbetskraft och konsumerar varor/tjänster. Mottar lön och transfereringar." },
+      { term: "Företag", def: "Producenter av varor och tjänster. Anlitar hushållens arbetskraft, betalar lön och tar emot betalning för sina produkter." },
+      { term: "Offentlig sektor", def: "Staten, regioner och kommuner. Samlar in skatter och omfördelar resurser via bidrag och offentliga tjänster (skola, vård, polis)." },
+      { term: "Banker och kreditinstitut", def: "Förmedlar kapital: samlar in sparande från hushåll och företag och lånar ut till dem som behöver. Styr kapitalflöden i ekonomin." },
+      { term: "Import", def: "Varor och tjänster som köps in från andra länder. Pengar flödar ut ur landet. Ökar konsumenternas valmöjligheter men kan minska inhemsk produktion." },
+      { term: "Export", def: "Varor och tjänster som säljs till andra länder. Pengar flödar in i landet. Viktigt för Sverige som liten öppen ekonomi (Volvo, IKEA, Ericsson)." },
+      { term: "Transfereringar", def: "Betalningar från offentlig sektor till hushåll utan direkt motprestation. Exempel: barnbidrag, sjukersättning, A-kassa, pensioner. Omfördelar resurser i samhället." },
+      { term: "Påfyllningar till det inre kretsloppet", def: "Flöden som tillför pengar till det inre kretsloppet: export (utlänningar betalar för svenska varor), investeringar (företag investerar) och offentliga utgifter (staten spenderar)." },
+      { term: "Avtappningar i det inre kretsloppet", def: "Flöden som tar pengar ut ur det inre kretsloppet: sparande (hushåll sparar istället för att konsumera), skatter (pengar till stat/kommun) och import (pengar lämnar landet)." },
+    ]
+  },
+  {
+    cat: "Makroekonomi & Konjunktur",
+    concepts: [
+      { term: "Köpkraft", def: "Hur mycket varor och tjänster dina pengar faktiskt räcker till. Hög inflation minskar köpkraften – du kan köpa mindre för samma summa pengar." },
+      { term: "BNP", def: "Bruttonationalprodukt – det totala marknadsvärdet av alla varor och tjänster producerade i ett land under ett år. Mäter ett lands ekonomiska storlek." },
+      { term: "BNP per capita", def: "BNP delat på antalet invånare. Ger ett mått på den genomsnittliga ekonomiska standarden. Bättre för att jämföra levnadsstandard mellan länder än total BNP." },
+      { term: "Inflation", def: "En generell, varaktig ökning av prisnivån i ekonomin. Pengarnas värde minskar – det krävs mer pengar för att köpa samma sak." },
+      { term: "Inflationstakt", def: "Hur snabbt priserna stiger, mätt i procent per år. Riksbankens mål är ca 2% per år. Mäts ofta med KPIF (konsumentprisindex)." },
+      { term: "Ekonomisk tillväxt", def: "Ökning av BNP över tid. Tillväxt innebär att ekonomin producerar mer varor och tjänster. Mäts ofta som procentuell förändring av BNP jämfört med föregående period." },
+      { term: "Konjunktur", def: "Det aktuella läget och svängningarna i ekonomins aktivitetsnivå. Ekonomin växlar mellan bra tider (högkonjunktur) och sämre tider (lågkonjunktur)." },
+      { term: "Högkonjunktur", def: "Period med hög ekonomisk aktivitet: låg arbetslöshet, stigande löner, hög produktion och konsumtion. Riskerar att leda till inflation om ekonomin 'överhettas'." },
+      { term: "Lågkonjunktur", def: "Period med låg ekonomisk aktivitet: stigande arbetslöshet, lägre produktion och konsumtion. Företag producerar under sin fulla kapacitet." },
+      { term: "Konjunkturcykel", def: "De regelbundna svängningarna i ekonomin mellan hög- och lågkonjunktur. En full cykel (topp → botten → topp) brukar ta 4–10 år." },
+      { term: "Recession", def: "Teknisk definition: BNP minskar under minst två kvartal i rad. En tydlig lågkonjunktur med märkbar ökning av arbetslöshet och minskning av produktion." },
+      { term: "Depression", def: "En mycket allvarlig och utdragen ekonomisk nedgång. Djupare och längre än en recession. Exempel: Den stora depressionen på 1930-talet. Massarbetslöshet och kraftig BNP-minskning." },
+      { term: "Produktivitet", def: "Hur effektivt resurser används för att producera output. Hög produktivitet = mer produktion med samma mängd resurser. Avgörande för ekonomisk tillväxt." },
+      { term: "Produktionstaket", def: "Den maximala produktionsnivå en ekonomi kan uppnå med fullt utnyttjande av alla resurser (full sysselsättning). Att producera över taket leder till inflation." },
+      { term: "Inflationsspiral / löne-prisspiralen", def: "En självförstärkande cykel: höga priser → krav på löneökningar → ökade företagskostnader → höjda priser → ökade lönekrav osv. Svår att stoppa utan åtgärder." },
+    ]
+  },
+  {
+    cat: "Utbud & Efterfrågan",
+    concepts: [
+      { term: "Utbud", def: "Den mängd av en vara eller tjänst som producenter är villiga och kan erbjuda till olika prisnivåer. Generellt: högre pris → högre utbjuden mängd." },
+      { term: "Efterfrågan", def: "Den mängd av en vara eller tjänst som konsumenter är villiga och kan köpa till olika prisnivåer. Generellt: lägre pris → högre efterfrågad mängd." },
+      { term: "Jämviktspris", def: "Det pris där utbjuden mängd = efterfrågad mängd. Marknaden 'klarerar' – ingen brist eller överskott. Kallas också marknadspris eller clearingpris." },
+      { term: "Efterfrågeöverskott", def: "Situationen när efterfrågad mängd > utbjuden mängd vid ett givet pris (ofta för lågt pris). Leder till brist och prisuppgång mot jämvikt." },
+      { term: "Utbudsöverskott", def: "Situationen när utbjuden mängd > efterfrågad mängd (ofta för högt pris). Leder till lager, prispress nedåt mot jämvikt." },
+      { term: "Efterfrågeboom eller -bust", def: "Boom: kraftig ökning av efterfrågan → priser och produktion stiger. Bust: kraftig minskning av efterfrågan → priser faller, produktion minskar. Kan triggas av externa chocker." },
+      { term: "Förädling av utbudskurvan", def: "Faktorer utöver priset som skiftar hela utbudskurvan: teknik, råvarupriser, skatter/subventioner, antal producenter. Ej att förväxla med rörelse längs kurvan (prisändring)." },
+      { term: "Icke priskänsliga varor", def: "Varor med låg priselasticitet – efterfrågan förändras lite trots prisändringar. Exempel: bensin, cigaretter, insulin. Kallas också 'inelastiska varor'." },
+      { term: "Konsumera", def: "Använda varor och tjänster för att tillfredsställa behov och önskemål. Hushållens konsumtion är den största komponenten i BNP i de flesta länder." },
+      { term: "Rationaliserat", def: "Effektivisering av produktion – att producera mer med samma resurser eller samma mängd med färre resurser. Ofta genom ny teknik. Kan leda till varsel." },
+      { term: "Prioriterar", def: "Att välja att fördela begränsade resurser till det man värderar mest. Grundläggande ekonomiskt beteende – knappheten tvingar fram prioriteringar." },
+    ]
+  },
+  {
+    cat: "Finanspolitik",
+    concepts: [
+      { term: "Finanspolitik – Statsbudgeten", def: "Regeringens och riksdagens verktyg för att påverka ekonomin via statens inkomster och utgifter. Statsbudgeten är planen för statens ekonomi under ett år." },
+      { term: "Inkomstsidan", def: "Statens intäkter i budgeten: skatter (inkomstskatt, moms, punktskatter), avgifter och andra inkomster. Sverige: ca 1 000+ miljarder kr/år." },
+      { term: "Utgiftssidan", def: "Statens utgifter i budgeten: transfereringar (pensioner, bidrag), statliga myndigheter, försvar, infrastruktur, utbildning m.m." },
+      { term: "Budget i balans", def: "Inkomster = utgifter. Staten varken lånar eller sparar netto. Sverige har ett 'överskottsmål' – staten ska ha en viss buffert i goda tider." },
+      { term: "Underbalanserar – Budgetunderskott", def: "Utgifter > inkomster. Staten lånar pengar för att täcka underskottet. Kan vara medvetet för att stimulera ekonomin i lågkonjunktur (keynesiansk politik)." },
+      { term: "Statsskuld", def: "Den ackumulerade summan av alla tidigare budgetunderskott. Det staten är skyldigt sina långivare. Sverige har relativt låg statsskuld internationellt sett." },
+      { term: "Överbalanserad – Budgetöverskott", def: "Inkomster > utgifter. Staten amorterar på statsskulden eller bygger upp reserver. Vanligt att eftersträva i högkonjunktur." },
+      { term: "Stimulera ekonomin", def: "Expansiv finanspolitik: sänka skatter och/eller öka offentliga utgifter för att öka efterfrågan i lågkonjunktur. Ofta leder till budgetunderskott." },
+      { term: "Strama åt – kyla ner ekonomin", def: "Kontraktiv finanspolitik: höja skatter och/eller minska utgifter för att dämpa överhettning och inflation i högkonjunktur." },
+    ]
+  },
+  {
+    cat: "Penningpolitik",
+    concepts: [
+      { term: "Penningpolitik – Styrränta", def: "Riksbankens verktyg för att påverka ekonomin via räntenivån. Målet är prisstabilitet (ca 2% inflation) och att stödja tillväxt och sysselsättning." },
+      { term: "Riksbanken (Centralbanken)", def: "Sveriges centralbank – en oberoende statlig myndighet. Ansvarar för penningpolitik, utger sedlar och mynt, och övervakar betalningssystemet." },
+      { term: "Reporäntan (Styrränta)", def: "Den ränta Riksbanken tar ut när affärsbanker lånar pengar av Riksbanken. Styr räntenivån i hela ekonomin – hög reporänta → dyrare lån för hushåll och företag." },
+      { term: "Ränteläget", def: "Den allmänna nivån på räntor i ekonomin. Lågt ränteläge stimulerar låntagning och konsumtion. Högt ränteläge dämpar låntagning och bekämpar inflation." },
+      { term: "Direktionen", def: "Riksbankens styrelse – sex ledamöter inklusive riksbankschefen – som fattar beslut om penningpolitiken, bl.a. om reporäntan, 6–8 gånger per år." },
+      { term: "Hyperinflation", def: "Extrem, okontrollerad inflation med snabbt stigande priser (>50%/månad). Pengarnas värde kollapsar. Historiska exempel: Weimar-Tyskland 1923, Zimbabwe 2007–2008." },
+      { term: "Deflation", def: "Generell prisnivåminskning – pengar ökar i värde. Kan verka bra men är farligt: konsumenter skjuter upp köp (väntar på lägre priser) → minskad efterfrågan → recession." },
+    ]
+  },
+  {
+    cat: "Valutapolitik",
+    concepts: [
+      { term: "Valutapolitik – Valutakursen", def: "Statens och centralbankens hantering av den egna valutans värde i förhållande till andra valutor. Påverkar export, import och internationell konkurrenskraft." },
+      { term: "Handelsberoende", def: "I vilken utsträckning ett lands ekonomi är beroende av internationell handel. Sverige är ett litet, handelsberoende land – export + import utgör stor andel av BNP." },
+      { term: "Flytande växelkurs", def: "Valutakursen bestäms fritt av utbud och efterfrågan på valutamarknaden. Kursen varierar dagligen. Sverige, USA, eurozonen (internt) m.fl. använder detta." },
+      { term: "Fast växelkurs", def: "Landet binder sin valutas kurs till en annan valuta (t.ex. dollar) och upprätthåller kursen via interventioner. Kräver stora valutareserver. Ger stabilitet men minskar flexibilitet." },
+      { term: "Devalvering", def: "Avsiktlig minskning av en valutas värde i ett system med fast växelkurs (eller officiellt beslut). Gör export billigare och import dyrare. Stimulerar inhemsk produktion." },
+      { term: "Revalvering", def: "Avsiktlig ökning av en valutas värde i ett system med fast växelkurs. Gör import billigare och export dyrare. Minskar inflation men kan skada exportindustrin." },
+      { term: "Valutareserv", def: "Centralbankers innehav av utländsk valuta och guld. Används för att försvara den egna valutan vid spekulativa attacker eller för att genomföra stödköp." },
+      { term: "Stödköp", def: "När centralbanken köper den egna valutan med sin valutareserv för att förhindra att kursen faller för mycket. Alternativt köp av statsobligationer för att stödja ekonomin." },
+      { term: "EMU (Europeiska Monetära Unionen)", def: "Eurozonens monetära samarbete inom EU. Deltagarna delar valuta (euro) och penningpolitik (via ECB). Sverige är EU-med men har valt att stå utanför eurozonen." },
+      { term: "ECB", def: "Europeiska centralbanken – centralbankens funktion för eurozonen. Fattar penningpolitiska beslut för alla euroländer, inklusive styrräntan för hela eurozonen." },
+      { term: "Euro", def: "Den gemensamma valutan för eurozonens 20 länder (2024). Infördes 1999 (kontanter 2002). Ger lättare handel inom zonen men tar bort enskilda länders penningpolitiska verktyg." },
+      { term: "Amerikanska dollar (USD)", def: "Världens dominerande reservvaluta. Råvaror (olja) handlas i dollar. USD:s styrka påverkar hela världsekonomin. Fed (Federal Reserve) är USA:s centralbank." },
+    ]
+  }
+];
+
+// Flatten all concepts for flashcard mode
+let allConcepts = [];
+DATA.forEach(cat => {
+  cat.concepts.forEach(c => {
+    allConcepts.push({ ...c, catName: cat.cat });
+  });
+});
+
+let currentMode = 'browse';
+let currentCat = 'all';
+let currentSearch = '';
+let fcIndex = 0;
+let fcDeck = [];
+
+// Build category tabs
+const tabsEl = document.getElementById('cat-tabs');
+DATA.forEach(cat => {
+  const btn = document.createElement('button');
+  btn.className = 'cat-tab';
+  btn.textContent = cat.cat;
+  btn.onclick = function() { filterCat(cat.cat, this); };
+  tabsEl.appendChild(btn);
+});
+
+function filterCat(cat, el) {
+  currentCat = cat;
+  document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderBrowse();
+  if (currentMode === 'flash') initFlash();
+}
+
+function filterAll() {
+  currentSearch = document.getElementById('search-input').value.toLowerCase();
+  renderBrowse();
+  if (currentMode === 'flash') initFlash();
+}
+
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById('btn-browse').classList.toggle('active', mode === 'browse');
+  document.getElementById('btn-flash').classList.toggle('active', mode === 'flash');
+  document.getElementById('browse-mode').style.display = mode === 'browse' ? '' : 'none';
+  document.getElementById('flashcard-mode').style.display = mode === 'flash' ? 'flex' : 'none';
+  if (mode === 'flash') initFlash();
+}
+
+function getFiltered() {
+  return allConcepts.filter(c => {
+    const matchCat = currentCat === 'all' || c.catName === currentCat;
+    const matchSearch = !currentSearch || 
+      c.term.toLowerCase().includes(currentSearch) || 
+      c.def.toLowerCase().includes(currentSearch);
+    return matchCat && matchSearch;
+  });
+}
+
+function renderBrowse() {
+  const container = document.getElementById('browse-mode');
+  container.innerHTML = '';
+  const filtered = getFiltered();
+
+  // Group by category
+  const groups = {};
+  filtered.forEach(c => {
+    if (!groups[c.catName]) groups[c.catName] = [];
+    groups[c.catName].push(c);
+  });
+
+  const catOrder = DATA.map(d => d.cat);
+  const sortedCats = Object.keys(groups).sort((a, b) => catOrder.indexOf(a) - catOrder.indexOf(b));
+
+  if (sortedCats.length === 0) {
+    container.innerHTML = '<div class="no-results">Inga begrepp matchade sökningen.</div>';
+    document.getElementById('stats-label').textContent = '0 begrepp';
+    return;
+  }
+
+  document.getElementById('stats-label').textContent = `${filtered.length} begrepp`;
+
+  sortedCats.forEach(catName => {
+    const section = document.createElement('div');
+    section.className = 'category-section';
+
+    section.innerHTML = `
+      <div class="cat-header">
+        <span class="cat-label">${catName}</span>
+        <div class="cat-line"></div>
+      </div>
+      <div class="concept-grid" id="grid-${catName.replace(/\s/g,'_')}"></div>
+    `;
+    container.appendChild(section);
+
+    const grid = section.querySelector('.concept-grid');
+    groups[catName].forEach(c => {
+      const card = document.createElement('div');
+      card.className = 'concept-card';
+      let subHtml = '';
+      if (c.sub) {
+        subHtml = `<div class="concept-sub">` +
+          c.sub.map(s => `<div class="concept-sub-item"><span>${s.label}:</span> ${s.val}</div>`).join('') +
+          `</div>`;
+      }
+      card.innerHTML = `
+        <div class="concept-term">${c.term}</div>
+        <div class="concept-def">${c.def}${subHtml}</div>
+      `;
+      grid.appendChild(card);
+    });
+  });
+}
+
+function initFlash() {
+  fcDeck = getFiltered();
+  fcIndex = 0;
+  document.getElementById('fc-filter-note').textContent = 
+    currentCat !== 'all' || currentSearch ? `Filtrerat: ${fcDeck.length} kort` : '';
+  showCard();
+}
+
+function showCard() {
+  if (fcDeck.length === 0) {
+    document.getElementById('fc-term').textContent = 'Inga begrepp';
+    document.getElementById('fc-def').textContent = 'Justera filter eller sök.';
+    document.getElementById('fc-counter').textContent = '0 / 0';
+    document.getElementById('fc-bar').style.width = '0%';
+    return;
+  }
+  const c = fcDeck[fcIndex];
+  document.getElementById('fc-term').textContent = c.term;
+  document.getElementById('fc-cat-badge').textContent = c.catName;
+  document.getElementById('fc-cat-badge-back').textContent = c.catName;
+  let defText = c.def;
+  if (c.sub) {
+    defText += ' ' + c.sub.map(s => `${s.label}: ${s.val}`).join(' | ');
+  }
+  document.getElementById('fc-def').textContent = defText;
+  document.getElementById('fc-counter').textContent = `${fcIndex + 1} / ${fcDeck.length}`;
+  document.getElementById('fc-bar').style.width = `${((fcIndex + 1) / fcDeck.length) * 100}%`;
+  document.getElementById('flashcard').classList.remove('flipped');
+}
+
+function flipCard() {
+  document.getElementById('flashcard').classList.toggle('flipped');
+}
+
+function fcNav(dir) {
+  if (fcDeck.length === 0) return;
+  fcIndex = (fcIndex + dir + fcDeck.length) % fcDeck.length;
+  showCard();
+}
+
+function shuffleCards() {
+  for (let i = fcDeck.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [fcDeck[i], fcDeck[j]] = [fcDeck[j], fcDeck[i]];
+  }
+  fcIndex = 0;
+  showCard();
+}
+
+// Init
+renderBrowse();
+document.getElementById('stats-label').textContent = `${allConcepts.length} begrepp`;
+</script>
+</body>
+</html>

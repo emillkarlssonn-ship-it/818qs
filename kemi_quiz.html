@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kemi Quiz — Syror & Baser</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f0efe9;
+    --surface: #ffffff;
+    --surface2: #e8e6df;
+    --border: rgba(0,0,0,0.1);
+    --border-strong: rgba(0,0,0,0.2);
+    --text: #1a1a1a;
+    --text-muted: #666;
+    --text-faint: #aaa;
+    --accent: #185FA5;
+    --accent-glow: rgba(24,95,165,0.12);
+    --green-bg: #EAF3DE; --green-border: #3B6D11; --green-text: #27500A;
+    --red-bg: #FCEBEB; --red-border: #A32D2D; --red-text: #791F1F;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #111113;
+      --surface: #1c1c1f;
+      --surface2: #27272b;
+      --border: rgba(255,255,255,0.08);
+      --border-strong: rgba(255,255,255,0.15);
+      --text: #f0f0f0;
+      --text-muted: #888;
+      --text-faint: #555;
+      --accent: #4d9de0;
+      --accent-glow: rgba(77,157,224,0.15);
+      --green-bg: #0d2b0d; --green-border: #2d6e2d; --green-text: #7ecf7e;
+      --red-bg: #2b0d0d; --red-border: #7a2d2d; --red-text: #f08080;
+    }
+  }
+
+  html { color-scheme: light dark; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 2.5rem 1.25rem 4rem;
+  }
+
+  .container { width: 100%; max-width: 560px; }
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+  }
+
+  .header-left { display: flex; flex-direction: column; gap: 2px; }
+
+  h1 { font-size: 18px; font-weight: 600; letter-spacing: -0.3px; }
+  .subtitle { font-size: 12px; color: var(--text-muted); }
+
+  .header-right { display: flex; gap: 8px; align-items: center; }
+
+  .theme-btn {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--surface2); border: 1px solid var(--border);
+    cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+  }
+  .theme-btn:hover { background: var(--surface); }
+
+  .cs-btn {
+    height: 36px; padding: 0 14px; border-radius: 20px;
+    background: var(--surface2); border: 1px solid var(--border);
+    cursor: pointer; font-size: 13px; font-weight: 500;
+    color: var(--text-muted); font-family: inherit;
+    display: flex; align-items: center; gap: 6px;
+    transition: background 0.15s, color 0.15s;
+    white-space: nowrap;
+  }
+  .cs-btn:hover { background: var(--surface); color: var(--text); }
+
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100; padding: 1.5rem;
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.15s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .modal {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 20px; padding: 1.75rem;
+    width: 100%; max-width: 480px;
+    max-height: 85vh; overflow-y: auto;
+    animation: slideUp 0.2s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+  .modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1.5rem;
+  }
+  .modal-title { font-size: 16px; font-weight: 600; }
+  .modal-close {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--surface2); border: 1px solid var(--border);
+    cursor: pointer; font-size: 18px; color: var(--text-muted);
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+    font-family: inherit;
+  }
+  .modal-close:hover { background: var(--border); color: var(--text); }
+
+  .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; gap: 8px; }
+
+  .score-pill {
+    background: var(--surface2);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 13px;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+  .score-pill span { font-weight: 600; color: var(--text); }
+
+  .mode-bar { display: flex; gap: 6px; margin-bottom: 1.25rem; }
+  .mode-btn {
+    flex: 1; padding: 9px; font-size: 13px; border-radius: 10px;
+    background: var(--surface2); border: 1px solid var(--border);
+    cursor: pointer; color: var(--text-muted); font-family: inherit;
+    transition: all 0.15s; font-weight: 400;
+  }
+  .mode-btn.active {
+    background: var(--surface); border-color: var(--border-strong);
+    color: var(--text); font-weight: 600;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+
+  .progress-bar { height: 3px; background: var(--surface2); border-radius: 2px; margin-bottom: 1.5rem; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.4s ease; }
+
+  .category-badge {
+    display: inline-block; font-size: 11px; font-weight: 600;
+    padding: 4px 10px; border-radius: 20px; margin-bottom: 14px;
+    letter-spacing: 0.3px; text-transform: uppercase;
+  }
+  .badge-acid  { background: #FAECE7; color: #712B13; }
+  .badge-base  { background: #E6F1FB; color: #0C447C; }
+  .badge-ion   { background: #EEEDFE; color: #3C3489; }
+  .badge-btb   { background: #EAF3DE; color: #27500A; }
+
+  @media (prefers-color-scheme: dark) {
+    .badge-acid  { background: #3a1508; color: #f0997b; }
+    .badge-base  { background: #0a1e33; color: #85b7eb; }
+    .badge-ion   { background: #1a1540; color: #afa9ec; }
+    .badge-btb   { background: #0d2210; color: #97c459; }
+  }
+
+  .question-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.75rem 1.5rem;
+    margin-bottom: 1.25rem;
+    transition: border-color 0.2s;
+  }
+  .question-label { font-size: 11px; color: var(--text-faint); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .question-text { font-size: 26px; font-weight: 600; letter-spacing: -0.5px; line-height: 1.2; }
+
+  .options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.25rem; }
+  .opt-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 12px;
+    font-size: 15px;
+    cursor: pointer;
+    text-align: center;
+    color: var(--text);
+    transition: background 0.12s, border-color 0.12s, transform 0.08s;
+    font-family: inherit;
+    font-weight: 400;
+    line-height: 1.3;
+  }
+  .opt-btn:hover:not(:disabled) { background: var(--surface2); border-color: var(--border-strong); transform: translateY(-1px); }
+  .opt-btn:active:not(:disabled) { transform: translateY(0); }
+  .opt-btn.correct { background: var(--green-bg); border-color: var(--green-border); color: var(--green-text); font-weight: 600; }
+  .opt-btn.wrong   { background: var(--red-bg);   border-color: var(--red-border);   color: var(--red-text); }
+  .opt-btn:disabled { cursor: default; opacity: 0.85; transform: none; }
+
+  .type-row { display: flex; gap: 8px; margin-bottom: 1.25rem; }
+  .type-row input[type=text] {
+    flex: 1; padding: 11px 14px; font-size: 16px; font-family: 'SF Mono', 'Fira Code', monospace;
+    border: 1px solid var(--border); border-radius: 10px;
+    background: var(--surface); color: var(--text);
+    outline: none; transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .type-row input[type=text]:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+  .type-row input[type=text]:disabled { opacity: 0.7; }
+
+  .submit-btn {
+    padding: 0 20px; border-radius: 10px;
+    background: var(--accent); border: none;
+    font-size: 14px; cursor: pointer; color: #fff;
+    font-family: inherit; font-weight: 600; white-space: nowrap;
+    transition: opacity 0.15s;
+  }
+  .submit-btn:hover { opacity: 0.88; }
+  .submit-btn:disabled { opacity: 0.5; cursor: default; }
+
+  .hint { font-size: 12px; color: var(--text-faint); margin-bottom: 10px; }
+  .hint code { background: var(--surface2); padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+
+  .feedback { min-height: 22px; font-size: 14px; margin-bottom: 1rem; font-weight: 600; }
+  .feedback.ok  { color: var(--green-border); }
+  .feedback.err { color: var(--red-border); }
+
+  @media (prefers-color-scheme: dark) {
+    .feedback.ok  { color: var(--green-text); }
+    .feedback.err { color: var(--red-text); }
+  }
+
+  .btn-next {
+    padding: 11px 24px; border-radius: 10px;
+    background: var(--surface2); border: 1px solid var(--border);
+    font-size: 14px; cursor: pointer; color: var(--text);
+    font-family: inherit; font-weight: 500;
+    transition: background 0.15s, transform 0.08s;
+  }
+  .btn-next:hover { background: var(--surface); border-color: var(--border-strong); }
+  .btn-next:active { transform: scale(0.98); }
+
+  .done-card {
+    text-align: center; padding: 3rem 1rem;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px;
+  }
+  .done-label { font-size: 12px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .done-score { font-size: 52px; font-weight: 700; letter-spacing: -1px; margin-bottom: 6px; }
+  .done-sub { color: var(--text-muted); font-size: 14px; margin-bottom: 1.75rem; }
+
+  .cheatsheet { margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border); }
+  .cs-heading { font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 1.25rem; text-transform: uppercase; letter-spacing: 0.5px; }
+  .cs-section { margin-bottom: 1.5rem; }
+  .cs-title { font-size: 12px; font-weight: 600; color: var(--text-faint); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.4px; }
+  .cs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+  .cs-item {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 12px; font-size: 13px;
+    transition: border-color 0.15s;
+  }
+  .cs-item:hover { border-color: var(--border-strong); }
+  .cs-name { color: var(--text-faint); font-size: 11px; margin-bottom: 2px; }
+  .cs-formula { font-weight: 600; font-size: 14px; }
+
+  .btb-row { display: flex; gap: 8px; }
+  .btb-chip { flex: 1; border-radius: 10px; padding: 12px 8px; text-align: center; font-size: 12px; font-weight: 600; line-height: 1.5; }
+  .btb-yellow { background: #fffbe6; color: #7a6a00; border: 1px solid #e6d800; }
+  .btb-green  { background: #EAF3DE; color: #27500A; border: 1px solid #97c459; }
+  .btb-blue   { background: #E6F1FB; color: #0C447C; border: 1px solid #85b7eb; }
+
+  @media (prefers-color-scheme: dark) {
+    .btb-yellow { background: #2a2300; color: #f0d060; border-color: #6b5c00; }
+    .btb-green  { background: #0d2210; color: #97c459; border-color: #2d6e2d; }
+    .btb-blue   { background: #0a1e33; color: #85b7eb; border-color: #185FA5; }
+  }
+
+  [data-theme="dark"] {
+    --bg: #111113; --surface: #1c1c1f; --surface2: #27272b;
+    --border: rgba(255,255,255,0.08); --border-strong: rgba(255,255,255,0.15);
+    --text: #f0f0f0; --text-muted: #888; --text-faint: #555;
+    --accent: #4d9de0; --accent-glow: rgba(77,157,224,0.15);
+    --green-bg: #0d2b0d; --green-border: #2d6e2d; --green-text: #7ecf7e;
+    --red-bg: #2b0d0d; --red-border: #7a2d2d; --red-text: #f08080;
+  }
+  [data-theme="light"] {
+    --bg: #f0efe9; --surface: #ffffff; --surface2: #e8e6df;
+    --border: rgba(0,0,0,0.1); --border-strong: rgba(0,0,0,0.2);
+    --text: #1a1a1a; --text-muted: #666; --text-faint: #aaa;
+    --accent: #185FA5; --accent-glow: rgba(24,95,165,0.12);
+    --green-bg: #EAF3DE; --green-border: #3B6D11; --green-text: #27500A;
+    --red-bg: #FCEBEB; --red-border: #A32D2D; --red-text: #791F1F;
+  }
+  [data-theme="dark"] .badge-acid  { background: #3a1508; color: #f0997b; }
+  [data-theme="dark"] .badge-base  { background: #0a1e33; color: #85b7eb; }
+  [data-theme="dark"] .badge-ion   { background: #1a1540; color: #afa9ec; }
+  [data-theme="dark"] .badge-btb   { background: #0d2210; color: #97c459; }
+  [data-theme="light"] .badge-acid  { background: #FAECE7; color: #712B13; }
+  [data-theme="light"] .badge-base  { background: #E6F1FB; color: #0C447C; }
+  [data-theme="light"] .badge-ion   { background: #EEEDFE; color: #3C3489; }
+  [data-theme="light"] .badge-btb   { background: #EAF3DE; color: #27500A; }
+  [data-theme="dark"] .feedback.ok  { color: #7ecf7e; }
+  [data-theme="dark"] .feedback.err { color: #f08080; }
+  [data-theme="light"] .feedback.ok  { color: #3B6D11; }
+  [data-theme="light"] .feedback.err { color: #A32D2D; }
+  [data-theme="dark"] .btb-yellow { background: #2a2300; color: #f0d060; border-color: #6b5c00; }
+  [data-theme="dark"] .btb-green  { background: #0d2210; color: #97c459; border-color: #2d6e2d; }
+  [data-theme="dark"] .btb-blue   { background: #0a1e33; color: #85b7eb; border-color: #185FA5; }
+  [data-theme="light"] .btb-yellow { background: #fffbe6; color: #7a6a00; border-color: #e6d800; }
+  [data-theme="light"] .btb-green  { background: #EAF3DE; color: #27500A; border-color: #97c459; }
+  [data-theme="light"] .btb-blue   { background: #E6F1FB; color: #0C447C; border-color: #85b7eb; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="header-left">
+      <h1>Kemi — Syror & Baser</h1>
+      <span class="subtitle">Läxquiz · 20 frågor</span>
+    </div>
+    <div class="header-right">
+      <button class="cs-btn" onclick="openCheatsheet()">📋 Fusklapp</button>
+      <button class="theme-btn" onclick="toggleTheme()" title="Växla dark/light mode" id="theme-icon">🌙</button>
+    </div>
+  </div>
+  <div id="modal-root"></div>
+  <div id="quiz-area"></div>
+  <div class="cheatsheet" id="cheatsheet"></div>
+</div>
+<script>
+const allCards = [
+  { category: 'Stark syra', badge: 'acid', q: 'Svavelsyra', a: 'H₂SO₄', opts: ['H₂SO₄','HCl','HNO₃','H₂CO₃'] },
+  { category: 'Stark syra', badge: 'acid', q: 'Saltsyra', a: 'HCl', opts: ['HNO₃','HCl','H₂SO₄','HAc'] },
+  { category: 'Stark syra', badge: 'acid', q: 'Salpetersyra', a: 'HNO₃', opts: ['H₂SO₄','H₃PO₄','HNO₃','HCl'] },
+  { category: 'Svag syra', badge: 'acid', q: 'Kolsyra', a: 'H₂CO₃', opts: ['H₃PO₄','H₂CO₃','HAc','HNO₃'] },
+  { category: 'Svag syra', badge: 'acid', q: 'Ättiksyra', a: 'HAc', opts: ['H₂CO₃','H₃PO₄','HCl','HAc'] },
+  { category: 'Svag syra', badge: 'acid', q: 'Fosforsyra', a: 'H₃PO₄', opts: ['H₂SO₄','HAc','H₃PO₄','H₂CO₃'] },
+  { category: 'Stark bas', badge: 'base', q: 'Natriumhydroxid', a: 'NaOH', opts: ['KOH','Ca(OH)₂','NaOH','NH₃'] },
+  { category: 'Stark bas', badge: 'base', q: 'Kaliumhydroxid', a: 'KOH', opts: ['NaOH','KOH','Ca(OH)₂','NH₄⁺'] },
+  { category: 'Stark bas', badge: 'base', q: 'Kalciumhydroxid', a: 'Ca(OH)₂', opts: ['KOH','Ca(OH)₂','NaOH','NH₃'] },
+  { category: 'Svag bas', badge: 'base', q: 'Ammoniak', a: 'NH₃', opts: ['NH₄⁺','NaOH','NH₃','KOH'] },
+  { category: 'Jon', badge: 'ion', q: 'Oxoniumjon', a: 'H₃O⁺', opts: ['NH₄⁺','Ac⁻','H₃O⁺','OH⁻'] },
+  { category: 'Jon', badge: 'ion', q: 'Ammoniumjon', a: 'NH₄⁺', opts: ['H₃O⁺','NH₃','Ac⁻','NH₄⁺'] },
+  { category: 'Jon', badge: 'ion', q: 'Acetatjon', a: 'Ac⁻', opts: ['H₃O⁺','Ac⁻','NH₄⁺','OH⁻'] },
+  { category: 'BTB', badge: 'btb', q: 'BTB är gult — vad gäller?', a: 'Surt (pH < 7)', opts: ['Neutralt (pH = 7)','Basiskt (pH > 7)','Surt (pH < 7)','Extremt basiskt'], forceMulti: true },
+  { category: 'BTB', badge: 'btb', q: 'BTB är grönt — vad gäller?', a: 'Neutralt (pH = 7)', opts: ['Surt (pH < 7)','Neutralt (pH = 7)','Basiskt (pH > 7)','Extremt surt'], forceMulti: true },
+  { category: 'BTB', badge: 'btb', q: 'BTB är blått — vad gäller?', a: 'Basiskt (pH > 7)', opts: ['Surt (pH < 7)','Neutralt (pH = 7)','Basiskt (pH > 7)','Obefintligt'], forceMulti: true },
+  { category: 'Formel → Namn', badge: 'acid', q: 'H₂SO₄', a: 'Svavelsyra', opts: ['Saltsyra','Salpetersyra','Svavelsyra','Kolsyra'], forceMulti: true },
+  { category: 'Formel → Namn', badge: 'acid', q: 'HCl', a: 'Saltsyra', opts: ['Svavelsyra','Saltsyra','Ättiksyra','Fosforsyra'], forceMulti: true },
+  { category: 'Formel → Namn', badge: 'base', q: 'NaOH', a: 'Natriumhydroxid', opts: ['Kaliumhydroxid','Kalciumhydroxid','Ammoniak','Natriumhydroxid'], forceMulti: true },
+  { category: 'Formel → Namn', badge: 'base', q: 'Ca(OH)₂', a: 'Kalciumhydroxid', opts: ['Natriumhydroxid','Kaliumhydroxid','Kalciumhydroxid','Ammoniak'], forceMulti: true },
+];
+
+function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
+
+function norm(s) {
+  const subMap = {'₀':'0','₁':'1','₂':'2','₃':'3','₄':'4','₅':'5','₆':'6','₇':'7','₈':'8','₉':'9'};
+  const supMap = {'⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9','⁺':'+','⁻':'-'};
+  return s.split('').map(c => subMap[c] || supMap[c] || c).join('').toLowerCase().replace(/\s+/g,'');
+}
+
+let deck = shuffle(allCards);
+let idx = 0, correct = 0, answered = false, mode = 'multi';
+
+function badgeClass(b) {
+  return { acid:'badge-acid', base:'badge-base', ion:'badge-ion', btb:'badge-btb' }[b] || 'badge-acid';
+}
+
+function setMode(m) { mode = m; answered = false; render(); }
+
+function render() {
+  const qa = document.getElementById('quiz-area');
+  if (idx >= deck.length) { showDone(); return; }
+  const card = deck[idx];
+  const useMulti = mode === 'multi' || card.forceMulti;
+  const opts = shuffle(card.opts);
+
+  const modeBar = `<div class="mode-bar">
+    <button class="mode-btn ${mode==='multi'?'active':''}" onclick="setMode('multi')">Flerval</button>
+    <button class="mode-btn ${mode==='type'?'active':''}" onclick="setMode('type')">Skriv svar</button>
+  </div>`;
+
+  const inputArea = useMulti
+    ? `<div class="options">${opts.map(o=>`<button class="opt-btn" onclick="answerMulti(this,'${o.replace(/'/g,"\\'")}','${card.a.replace(/'/g,"\\'")}')">${o}</button>`).join('')}</div>`
+    : `<div class="hint">Tips: skriv t.ex. <code>h2so4</code> — stora/små bokstäver spelar ingen roll</div>
+       <div class="type-row">
+         <input type="text" id="type-input" placeholder="Skriv formeln här..." autocomplete="off" autocorrect="off" spellcheck="false" onkeydown="if(event.key==='Enter')answerType()">
+         <button class="submit-btn" onclick="answerType()">Svara</button>
+       </div>`;
+
+  qa.innerHTML = `
+    <div class="top-bar">
+      <div class="score-pill">Rätt: <span>${correct}</span> / <span>${idx}</span></div>
+      <div class="score-pill">${idx+1} / ${deck.length}</div>
+    </div>
+    ${modeBar}
+    <div class="progress-bar"><div class="progress-fill" style="width:${(idx/deck.length*100).toFixed(0)}%"></div></div>
+    <span class="category-badge ${badgeClass(card.badge)}">${card.category}</span>
+    <div class="question-card">
+      <div class="question-label">Vad är svaret för:</div>
+      <div class="question-text">${card.q}</div>
+    </div>
+    ${inputArea}
+    <div class="feedback" id="fb"></div>
+    <div><button class="btn-next" id="next-btn" onclick="next()" style="display:none">Nästa fråga</button></div>`;
+
+  if (mode === 'type' && !card.forceMulti) {
+    setTimeout(() => { const el = document.getElementById('type-input'); if(el) el.focus(); }, 50);
+  }
+}
+
+function showFeedback(ok, correctAns) {
+  const fb = document.getElementById('fb');
+  if (ok) { correct++; fb.textContent = 'Rätt!'; fb.className = 'feedback ok'; }
+  else { fb.textContent = 'Fel — rätt svar: ' + correctAns; fb.className = 'feedback err'; }
+  document.getElementById('next-btn').style.display = 'inline-block';
+  answered = true;
+}
+
+function answerMulti(btn, chosen, correctAns) {
+  if (answered) return;
+  document.querySelectorAll('.opt-btn').forEach(b => { b.disabled = true; if(b.textContent===correctAns) b.classList.add('correct'); });
+  if (chosen === correctAns) btn.classList.add('correct'); else btn.classList.add('wrong');
+  showFeedback(chosen === correctAns, correctAns);
+}
+
+function answerType() {
+  if (answered) return;
+  const input = document.getElementById('type-input');
+  if (!input) return;
+  const val = input.value.trim();
+  if (!val) return;
+  const card = deck[idx];
+  const ok = norm(val) === norm(card.a);
+  input.disabled = true;
+  document.querySelector('.submit-btn').disabled = true;
+  input.style.borderColor = ok ? '#3B6D11' : '#A32D2D';
+  showFeedback(ok, card.a);
+}
+
+function next() { idx++; answered = false; render(); }
+
+function showDone() {
+  const pct = Math.round(correct / deck.length * 100);
+  const msg = pct >= 90 ? 'Strålande! Du kan det här.' : pct >= 70 ? 'Bra jobbat! Lite mer så sitter det.' : 'Kör ett varv till så fixar du det!';
+  document.getElementById('quiz-area').innerHTML = `
+    <div class="done-card">
+      <div class="done-label">Resultat</div>
+      <div class="done-score">${correct} / ${deck.length}</div>
+      <div class="done-sub">${msg}</div>
+      <button class="btn-next" onclick="restart()">Kör om quizet</button>
+    </div>`;
+  renderCheatsheet();
+}
+
+function restart() {
+  deck = shuffle(allCards); idx = 0; correct = 0; answered = false;
+  document.getElementById('cheatsheet').innerHTML = '';
+  render();
+}
+
+function renderCheatsheet() {
+  document.getElementById('cheatsheet').innerHTML = `
+    <div class="cs-heading">Fusklapp</div>
+    <div class="cs-section"><div class="cs-title">Starka syror</div><div class="cs-grid">
+      <div class="cs-item"><div class="cs-name">Svavelsyra</div><div class="cs-formula">H₂SO₄</div></div>
+      <div class="cs-item"><div class="cs-name">Saltsyra</div><div class="cs-formula">HCl</div></div>
+      <div class="cs-item"><div class="cs-name">Salpetersyra</div><div class="cs-formula">HNO₃</div></div>
+    </div></div>
+    <div class="cs-section"><div class="cs-title">Svaga syror</div><div class="cs-grid">
+      <div class="cs-item"><div class="cs-name">Kolsyra</div><div class="cs-formula">H₂CO₃</div></div>
+      <div class="cs-item"><div class="cs-name">Ättiksyra</div><div class="cs-formula">HAc</div></div>
+      <div class="cs-item"><div class="cs-name">Fosforsyra</div><div class="cs-formula">H₃PO₄</div></div>
+    </div></div>
+    <div class="cs-section"><div class="cs-title">Starka baser</div><div class="cs-grid">
+      <div class="cs-item"><div class="cs-name">Natriumhydroxid</div><div class="cs-formula">NaOH</div></div>
+      <div class="cs-item"><div class="cs-name">Kaliumhydroxid</div><div class="cs-formula">KOH</div></div>
+      <div class="cs-item"><div class="cs-name">Kalciumhydroxid</div><div class="cs-formula">Ca(OH)₂</div></div>
+    </div></div>
+    <div class="cs-section"><div class="cs-title">Svag bas & joner</div><div class="cs-grid">
+      <div class="cs-item"><div class="cs-name">Ammoniak</div><div class="cs-formula">NH₃</div></div>
+      <div class="cs-item"><div class="cs-name">Oxoniumjon</div><div class="cs-formula">H₃O⁺</div></div>
+      <div class="cs-item"><div class="cs-name">Ammoniumjon</div><div class="cs-formula">NH₄⁺</div></div>
+      <div class="cs-item"><div class="cs-name">Acetatjon</div><div class="cs-formula">Ac⁻</div></div>
+    </div></div>
+    <div class="cs-section"><div class="cs-title">BTB-indikator</div><div class="btb-row">
+      <div class="btb-chip btb-yellow">Gult = Surt<br>pH &lt; 7</div>
+      <div class="btb-chip btb-green">Grönt = Neutralt<br>pH = 7</div>
+      <div class="btb-chip btb-blue">Blått = Basiskt<br>pH &gt; 7</div>
+    </div></div>`;
+}
+
+function openCheatsheet() {
+  const root = document.getElementById('modal-root');
+  root.innerHTML = `
+    <div class="modal-overlay" id="modal-overlay" onclick="handleOverlayClick(event)">
+      <div class="modal">
+        <div class="modal-header">
+          <span class="modal-title">Fusklapp</span>
+          <button class="modal-close" onclick="closeCheatsheet()">×</button>
+        </div>
+        <div class="cs-section"><div class="cs-title">Starka syror</div><div class="cs-grid">
+          <div class="cs-item"><div class="cs-name">Svavelsyra</div><div class="cs-formula">H₂SO₄</div></div>
+          <div class="cs-item"><div class="cs-name">Saltsyra</div><div class="cs-formula">HCl</div></div>
+          <div class="cs-item"><div class="cs-name">Salpetersyra</div><div class="cs-formula">HNO₃</div></div>
+        </div></div>
+        <div class="cs-section"><div class="cs-title">Svaga syror</div><div class="cs-grid">
+          <div class="cs-item"><div class="cs-name">Kolsyra</div><div class="cs-formula">H₂CO₃</div></div>
+          <div class="cs-item"><div class="cs-name">Ättiksyra</div><div class="cs-formula">HAc</div></div>
+          <div class="cs-item"><div class="cs-name">Fosforsyra</div><div class="cs-formula">H₃PO₄</div></div>
+        </div></div>
+        <div class="cs-section"><div class="cs-title">Starka baser</div><div class="cs-grid">
+          <div class="cs-item"><div class="cs-name">Natriumhydroxid</div><div class="cs-formula">NaOH</div></div>
+          <div class="cs-item"><div class="cs-name">Kaliumhydroxid</div><div class="cs-formula">KOH</div></div>
+          <div class="cs-item"><div class="cs-name">Kalciumhydroxid</div><div class="cs-formula">Ca(OH)₂</div></div>
+        </div></div>
+        <div class="cs-section"><div class="cs-title">Svag bas & joner</div><div class="cs-grid">
+          <div class="cs-item"><div class="cs-name">Ammoniak</div><div class="cs-formula">NH₃</div></div>
+          <div class="cs-item"><div class="cs-name">Oxoniumjon</div><div class="cs-formula">H₃O⁺</div></div>
+          <div class="cs-item"><div class="cs-name">Ammoniumjon</div><div class="cs-formula">NH₄⁺</div></div>
+          <div class="cs-item"><div class="cs-name">Acetatjon</div><div class="cs-formula">Ac⁻</div></div>
+        </div></div>
+        <div class="cs-section"><div class="cs-title">BTB-indikator</div><div class="btb-row">
+          <div class="btb-chip btb-yellow">Gult = Surt<br>pH &lt; 7</div>
+          <div class="btb-chip btb-green">Grönt = Neutralt<br>pH = 7</div>
+          <div class="btb-chip btb-blue">Blått = Basiskt<br>pH &gt; 7</div>
+        </div></div>
+      </div>
+    </div>`;
+  document.addEventListener('keydown', escListener);
+}
+
+function closeCheatsheet() {
+  document.getElementById('modal-root').innerHTML = '';
+  document.removeEventListener('keydown', escListener);
+}
+
+function handleOverlayClick(e) {
+  if (e.target.id === 'modal-overlay') closeCheatsheet();
+}
+
+function escListener(e) { if (e.key === 'Escape') closeCheatsheet(); }
+
+function toggleTheme() {
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark' ||
+    (!html.getAttribute('data-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  document.getElementById('theme-icon').textContent = isDark ? '🌙' : '☀️';
+}
+
+render();
+</script>
+</body>
+</html>
